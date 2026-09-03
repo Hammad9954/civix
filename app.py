@@ -1,728 +1,709 @@
-"""
-CivicAI — Smart Civic Issue Reporting & Resolution Platform
+import streamlit as st
 
-Streamlit entry-point.
-
-Run with:
-    streamlit run app.py
-"""
-
-from __future__ import annotations
-
-import sys
 from pathlib import Path
 
+from datetime import datetime
+
 import folium
-import streamlit as st
+
 from streamlit_folium import st_folium
-from streamlit_geolocation import streamlit_geolocation
 
-# ────────────────────────────────────────────────────────────
-# Ensure project root is on sys.path
-# ────────────────────────────────────────────────────────────
-
-PROJECT_ROOT = Path(__file__).resolve().parent
-
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+from streamlit_geolocation import (
+    streamlit_geolocation
+)
 
 
-# ────────────────────────────────────────────────────────────
-# Project Imports
-# ────────────────────────────────────────────────────────────
+from ai.classifier import (
+    CivicIssueClassifier
+)
 
-from ai.classifier import CivicIssueClassifier
-from ai.duplicate_detector import find_duplicate_reports
-from ai.priority_engine import calculate_priority
-from ai.resolution_verifier import verify_resolution
-from components.dashboard import render_dashboard
+from ai.duplicate_detector import (
+    find_duplicate_reports
+)
 
-from components.upload import render_upload_section
-from components.report_form import render_report_form
+from ai.priority_engine import (
+    calculate_priority
+)
 
-from config.constants import ISSUE_TYPES, UPLOADS_DIR
+from ai.spam_detector import (
+    calculate_spam_score
+)
 
-from utils.authority import assign_authority
+from ai.resolution_verifier import (
+    verify_resolution
+)
 
 from utils.report import (
     create_report,
     save_report,
-    load_reports,
+    load_reports
+)
+
+from utils.authority import (
+    assign_authority
+)
+
+from components.report_form import (
+    render_report_form
+)
+
+from components.dashboard import (
+    render_dashboard
+)
+
+from components.chatbot import (
+    civic_chatbot
+)
+
+from components.admin_dashboard import (
+    render_admin_dashboard
 )
 
 
-# ────────────────────────────────────────────────────────────
-# Page Configuration
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# CONFIG
+# ============================================================
 
 st.set_page_config(
-    page_title="CivicAI — Smart Civic Issue Reporting",
+
+    page_title="CivicSense",
+
     page_icon="🏙️",
-    layout="centered",
-    initial_sidebar_state="collapsed",
+
+    layout="wide"
 )
 
 
-# ────────────────────────────────────────────────────────────
-# Initialise Session State
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# DIRECTORIES
+# ============================================================
 
-if "classifier" not in st.session_state:
-    st.session_state.classifier = CivicIssueClassifier()
+UPLOADS_DIR = Path(
+    "uploads"
+)
 
-if "ai_result" not in st.session_state:
-    st.session_state.ai_result = None
-
-if "submitted_report" not in st.session_state:
-    st.session_state.submitted_report = None
-
-if "last_uploaded_file" not in st.session_state:
-    st.session_state.last_uploaded_file = None
+UPLOADS_DIR.mkdir(
+    exist_ok=True
+)
 
 
-# ────────────────────────────────────────────────────────────
-# Header
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# TITLE
+# ============================================================
 
-st.title("🏙️ CivicAI")
+st.title(
+    "🏙️ CivicSense"
+)
 
 st.caption(
     "Smart Civic Issue Reporting & Resolution Platform"
 )
 
-st.markdown("---")
+
+# ============================================================
+# INITIALIZE CLASSIFIER
+# ============================================================
+
+@st.cache_resource
+def get_classifier():
+
+    return CivicIssueClassifier()
+
+
+classifier = get_classifier()
+
+
+# ============================================================
+# NAVIGATION
+# ============================================================
+
 page = st.radio(
+
     "Navigation",
+
     [
+
         "📝 Report Issue",
-        "📊 Civic Dashboard"
+
+        "📊 Civic Dashboard",
+
+        "🤖 Civic Assistant",
+
+        "🏛️ Authority Panel"
+
     ],
+
     horizontal=True
 )
+
+
+# ============================================================
+# DASHBOARD
+# ============================================================
+
 if page == "📊 Civic Dashboard":
 
     reports = load_reports()
 
-    render_dashboard(reports)
-
-    st.stop()
-
-
-# ────────────────────────────────────────────────────────────
-# Step 1 — Upload Image
-# ────────────────────────────────────────────────────────────
-
-image, uploaded_file = render_upload_section()
-
-
-# Reset analysis when a new image is uploaded
-if (
-    uploaded_file is not None
-    and uploaded_file.name
-    != st.session_state.last_uploaded_file
-):
-
-    st.session_state.last_uploaded_file = uploaded_file.name
-
-    st.session_state.ai_result = None
-
-    st.session_state.submitted_report = None
-
-
-# Stop if no image
-if image is None:
-    st.stop()
-
-
-# ────────────────────────────────────────────────────────────
-# Step 2 — AI Analysis
-# ────────────────────────────────────────────────────────────
-
-st.markdown("---")
-
-st.subheader("🤖 AI Analysis")
-
-
-classifier: CivicIssueClassifier = (
-    st.session_state.classifier
-)
-
-
-if st.button(
-    "Analyse Image",
-    type="secondary",
-    use_container_width=True,
-):
-
-    with st.spinner("Analysing image..."):
-
-        ai_result = classifier.predict(image)
-
-        st.session_state.ai_result = ai_result
-
-
-ai_result = st.session_state.ai_result
-
-
-if ai_result is None:
-
-    st.info(
-        "Click **Analyse Image** to run the "
-        "AI classifier on your uploaded photo."
+    render_dashboard(
+        reports
     )
 
     st.stop()
 
 
-# ────────────────────────────────────────────────────────────
-# Step 3 — Report Form
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# CHATBOT
+# ============================================================
+
+if page == "🤖 Civic Assistant":
+
+    civic_chatbot()
+
+    st.stop()
+
+
+# ============================================================
+# AUTHORITY PANEL
+# ============================================================
+
+if page == "🏛️ Authority Panel":
+
+    reports = load_reports()
+
+    render_admin_dashboard(
+        reports
+    )
+
+    st.stop()
+
+
+# ============================================================
+# REPORT PAGE
+# ============================================================
+
+st.subheader(
+    "📷 Upload Civic Issue Image"
+)
+
+
+uploaded_image = st.file_uploader(
+
+    "Upload an image",
+
+    type=[
+        "jpg",
+        "jpeg",
+        "png"
+    ]
+)
+
+
+ai_result = None
+
+
+# ============================================================
+# AI ANALYSIS
+# ============================================================
+
+if uploaded_image is not None:
+
+    st.image(
+
+        uploaded_image,
+
+        caption="Uploaded Image",
+
+        use_container_width=True
+    )
+
+    if st.button(
+        "🤖 Analyse Image",
+        use_container_width=True
+    ):
+
+        with st.spinner(
+            "Analysing civic issue..."
+        ):
+
+            ai_result = classifier.predict(
+                uploaded_image
+            )
+
+        st.success(
+            "AI analysis completed."
+        )
+
+        detections = (
+            ai_result.get(
+                "detections",
+                []
+            )
+        )
+
+        if detections:
+
+            st.subheader(
+                "🔍 AI Detection Results"
+            )
+
+            for detection in detections:
+
+                st.write(
+
+                    f"**{detection['issue_type']}** "
+                    f"— "
+                    f"{detection['confidence'] * 100:.1f}%"
+
+                )
+
+        else:
+
+            st.warning(
+                "No civic issue was detected."
+            )
+
+
+# ============================================================
+# REPORT FORM
+# ============================================================
+
+if uploaded_image is None:
+
+    st.info(
+        "Upload an image to continue."
+    )
+
+    st.stop()
+
+
+form_data = render_report_form(
+    ai_result
+)
+
+
+# ============================================================
+# LOCATION
+# ============================================================
 
 st.markdown("---")
 
-form_data = render_report_form(ai_result)
-
-
-# ────────────────────────────────────────────────────────────
-# PHASE 2 — LOCATION
-# ────────────────────────────────────────────────────────────
-
-st.markdown("---")
-
-st.subheader("📍 Report Location")
+st.subheader(
+    "📍 Report Location"
+)
 
 
 location = streamlit_geolocation()
 
 
-latitude = location.get("latitude")
-longitude = location.get("longitude")
+latitude = location.get(
+    "latitude"
+)
+
+longitude = location.get(
+    "longitude"
+)
 
 
 if (
     latitude is not None
-    and longitude is not None
+    and
+    longitude is not None
 ):
 
     st.success(
+
         f"📍 Location captured: "
-        f"{latitude:.6f}, {longitude:.6f}"
+        f"{latitude:.6f}, "
+        f"{longitude:.6f}"
+
     )
-
-
-    # ────────────────────────────────────────────────
-    # Show Map
-    # ────────────────────────────────────────────────
 
     report_map = folium.Map(
+
         location=[
             latitude,
-            longitude,
+            longitude
         ],
-        zoom_start=16,
-    )
 
+        zoom_start=16
+    )
 
     folium.Marker(
+
         [
             latitude,
-            longitude,
+            longitude
         ],
-        popup="Your reported issue",
-        tooltip="📍 Report Location",
+
+        popup=
+            "Your reported issue",
+
+        tooltip=
+            "📍 Report Location",
+
         icon=folium.Icon(
             color="red",
-            icon="warning-sign",
-        ),
-    ).add_to(report_map)
+            icon="warning-sign"
+        )
 
-
-    st_folium(
-        report_map,
-        width=700,
-        height=400,
+    ).add_to(
+        report_map
     )
 
+    st_folium(
+
+        report_map,
+
+        width=700,
+
+        height=400
+    )
 
 else:
 
     st.warning(
-        "📍 Please allow browser location access "
-        "to capture your report location."
+        "📍 Please click the "
+        "location button and allow "
+        "browser location access."
     )
 
 
-# Stop until report form is submitted
+# ============================================================
+# FORM SUBMISSION
+# ============================================================
+
 if form_data is None:
+
     st.stop()
 
 
-# ────────────────────────────────────────────────────────────
-# Step 4 — Prepare Report
-# ────────────────────────────────────────────────────────────
-
-confirmed_category = form_data[
-    "confirmed_category"
-]
-
-description = form_data[
-    "description"
-]
-
-
-# ────────────────────────────────────────────────────────────
-# Save Uploaded Image
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# CREATE IMAGE FILE
+# ============================================================
 
 image_filename = (
-    uploaded_file.name
-    if uploaded_file
-    else None
+    uploaded_image.name
 )
 
-image_path = None
+image_path = (
+    UPLOADS_DIR /
+    image_filename
+)
 
 
-if uploaded_file is not None:
+with open(
+    image_path,
+    "wb"
+) as file:
 
-    uploads_dir = Path(UPLOADS_DIR)
-
-    uploads_dir.mkdir(
-        parents=True,
-        exist_ok=True,
+    file.write(
+        uploaded_image.getbuffer()
     )
 
-    image_path = str(
-        uploads_dir / uploaded_file.name
+
+# ============================================================
+# CREATE REPORT
+# ============================================================
+
+confirmed_category = (
+    form_data.get(
+        "confirmed_category",
+        "Other"
     )
+)
 
+description = (
+    form_data.get(
+        "description",
+        ""
+    )
+)
 
-    with open(
-        image_path,
-        "wb"
-    ) as f:
-
-        uploaded_file.seek(0)
-
-        f.write(
-            uploaded_file.read()
-        )
-
-
-# ────────────────────────────────────────────────────────────
-# Create Report
-# ────────────────────────────────────────────────────────────
 
 report = create_report(
 
-    issue_type=confirmed_category,
+    issue_type=
+        confirmed_category,
 
-    ai_result=ai_result,
+    ai_result=
+        ai_result or {},
 
-    confirmed_category=confirmed_category,
+    confirmed_category=
+        confirmed_category,
 
-    description=description,
+    description=
+        description,
 
-    image_filename=image_filename,
+    image_filename=
+        image_filename,
 
-    image_path=image_path,
+    image_path=
+        str(image_path),
 
-    latitude=latitude,
+    latitude=
+        latitude,
 
-    longitude=longitude,
+    longitude=
+        longitude
 )
 
 
 # ============================================================
-# PHASE 5 — REPORT STATUS
+# STATUS
 # ============================================================
 
-report["status"] = "Reported"
+report["status"] = (
+    "Reported"
+)
 
 report["status_history"] = [
 
     {
-        "status": "Reported",
 
-        "timestamp": report["created_at"],
+        "status":
+            "Reported",
+
+        "timestamp":
+            report["created_at"]
+
     }
 
 ]
 
 
 # ============================================================
-# PHASE 3 — DUPLICATE DETECTION
+# EXISTING REPORTS
 # ============================================================
 
 existing_reports = load_reports()
 
 
-duplicate_matches = find_duplicate_reports(
+# ============================================================
+# DUPLICATE DETECTION
+# ============================================================
 
-    report,
+duplicate_matches = (
+    find_duplicate_reports(
 
-    existing_reports,
+        report,
+
+        existing_reports
+
+    )
 )
 
 
 report["duplicates"] = {
 
     "is_duplicate":
-        len(duplicate_matches) > 0,
+        len(
+            duplicate_matches
+        ) > 0,
 
     "matches":
-        duplicate_matches,
+        duplicate_matches
 }
 
 
-# ────────────────────────────────────────────────────────────
-# Display Duplicate Results
-# ────────────────────────────────────────────────────────────
-
-st.markdown("---")
-
-st.subheader("🔍 Duplicate Detection")
-
-
-if duplicate_matches:
-
-    st.warning(
-
-        f"⚠️ {len(duplicate_matches)} "
-        "similar report(s) found nearby."
-    )
-
-
-    for match in duplicate_matches[:5]:
-
-        st.write(
-
-            f"**{match['report_id']}** — "
-
-            f"{match['distance_m']} m away — "
-
-            f"Similarity: "
-
-            f"{match['duplicate_score'] * 100:.0f}%"
-
-        )
-
-else:
-
-    st.success(
-        "✅ No likely duplicate reports found."
-    )
-
-
 # ============================================================
-# PHASE 4 — PRIORITY ENGINE
+# SPAM DETECTION
 # ============================================================
 
-priority = calculate_priority(
+spam_result = (
+    calculate_spam_score(
 
-    report,
+        report,
 
-    duplicate_count=len(
-        duplicate_matches
-    ),
+        existing_reports
 
+    )
 )
 
 
-report["priority"] = priority
-
-
-# ────────────────────────────────────────────────────────────
-# Display Priority
-# ────────────────────────────────────────────────────────────
-
-st.markdown("---")
-
-st.subheader("🧠 Intelligent Priority")
-
-
-score = priority["score"]
-
-level = priority["level"]
-
-
-if level == "CRITICAL":
-
-    st.error(
-        f"🔴 CRITICAL — {score}/100"
-    )
-
-elif level == "HIGH":
-
-    st.warning(
-        f"🟠 HIGH — {score}/100"
-    )
-
-elif level == "MEDIUM":
-
-    st.info(
-        f"🟡 MEDIUM — {score}/100"
-    )
-
-else:
-
-    st.success(
-        f"🟢 LOW — {score}/100"
-    )
-
-
-with st.expander(
-    "View priority factors"
-):
-
-    st.json(
-        priority["factors"]
-    )
+report["spam"] = (
+    spam_result
+)
 
 
 # ============================================================
-# PHASE 5 — AUTHORITY ASSIGNMENT
+# PRIORITY
 # ============================================================
 
-authority = assign_authority(
+priority = (
+    calculate_priority(
+
+        report,
+
+        duplicate_count=
+            len(
+                duplicate_matches
+            )
+
+    )
+)
+
+
+report["priority"] = (
+    priority
+)
+
+
+# ============================================================
+# AUTHORITY ASSIGNMENT
+# ============================================================
+
+authority = (
+    assign_authority(
+        report
+    )
+)
+
+
+report["assignment"] = (
+    authority
+)
+
+
+# ============================================================
+# SAVE REPORT
+# ============================================================
+
+save_report(
     report
 )
 
 
-report["assignment"] = authority
-
-
-# ────────────────────────────────────────────────────────────
-# Display Authority Assignment
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# REPORT SUMMARY
+# ============================================================
 
 st.markdown("---")
 
-st.subheader("🏛️ Authority Assignment")
+st.subheader(
+    "📋 Report Summary"
+)
 
 
-col1, col2 = st.columns(2)
+col1, col2 = (
+    st.columns(2)
+)
 
 
 with col1:
 
     st.write(
-        f"**Department:** "
-        f"{authority['department']}"
+        "**Issue:**",
+        confirmed_category
     )
 
     st.write(
-        f"**Authority ID:** "
-        f"{authority['authority_id']}"
+        "**Priority:**",
+        report[
+            "priority"
+        ][
+            "level"
+        ]
+    )
+
+    st.write(
+        "**Priority Score:**",
+        report[
+            "priority"
+        ][
+            "score"
+        ]
+    )
+
+    st.write(
+        "**Status:**",
+        report[
+            "status"
+        ]
     )
 
 
 with col2:
 
     st.write(
-        f"**Authority:** "
-        f"{authority['authority_name']}"
+        "**Department:**",
+        report[
+            "assignment"
+        ][
+            "department"
+        ]
     )
 
     st.write(
-        f"**Status:** "
-        f"{report['status']}"
+        "**Authority:**",
+        report[
+            "assignment"
+        ][
+            "authority_name"
+        ]
     )
 
-
-st.info(
-    "📋 Your report has been assigned "
-    "to the appropriate civic department."
-)
-
-
-# ============================================================
-# SAVE FINAL REPORT
-# ============================================================
-
-save_report(report)
-
-
-st.session_state.submitted_report = report
-
-
-# ────────────────────────────────────────────────────────────
-# Step 5 — Success & Report Summary
-# ────────────────────────────────────────────────────────────
-
-st.markdown("---")
-
-st.success(
-    f"✅ Report submitted successfully! "
-    f"**{report['id']}**"
-)
-
-
-st.subheader("📄 Report Summary")
-
-
-col1, col2 = st.columns(2)
-
-
-# ────────────────────────────────────────────────────────────
-# Column 1
-# ────────────────────────────────────────────────────────────
-
-with col1:
-
-    st.metric(
-        "Report ID",
-        report["id"]
+    st.write(
+        "**Spam Score:**",
+        report[
+            "spam"
+        ][
+            "score"
+        ]
     )
 
-    st.metric(
-        "Issue Type",
-        report["issue"]["type"]
-    )
-
-    st.metric(
-        "Status",
-        report["status"]
-        .replace("_", " ")
-        .title()
-    )
-
-    st.metric(
-        "Priority",
-        f"{report['priority']['level']} "
-        f"({report['priority']['score']}/100)"
-    )
-
-
-# ────────────────────────────────────────────────────────────
-# Column 2
-# ────────────────────────────────────────────────────────────
-
-with col2:
-
-    st.metric(
-        "AI Available",
+    st.write(
+        "**Duplicate:**",
         "Yes"
-        if report["ai"]["available"]
+        if report[
+            "duplicates"
+        ][
+            "is_duplicate"
+        ]
         else "No"
     )
 
 
-    if report["ai"]["available"]:
-
-        st.metric(
-            "AI Category",
-            report["ai"]["category"]
-            or "—"
-        )
-
-
-        st.metric(
-            "AI Confidence",
-            f"{report['ai']['confidence'] * 100:.0f}%"
-        )
-
-
-    st.metric(
-        "Confirmed Category",
-        report["user"]["confirmed_category"]
-    )
-
-
-# ────────────────────────────────────────────────────────────
-# Description
-# ────────────────────────────────────────────────────────────
-
-if description:
-
-    st.markdown(
-        f"**Description:** {description}"
-    )
-
-
-# ────────────────────────────────────────────────────────────
-# Location
-# ────────────────────────────────────────────────────────────
-
-if (
-    latitude is not None
-    and longitude is not None
-):
-
-    st.markdown(
-        f"**📍 Location:** "
-        f"{latitude:.6f}, "
-        f"{longitude:.6f}"
-    )
-
-
-# ────────────────────────────────────────────────────────────
-# Authority
-# ────────────────────────────────────────────────────────────
-
-st.markdown(
-    f"**🏛️ Department:** "
-    f"{authority['department']}"
-)
-
-
-st.markdown(
-    f"**👤 Assigned Authority:** "
-    f"{authority['authority_name']}"
-)
-
-
-# ────────────────────────────────────────────────────────────
-# Created Time
-# ────────────────────────────────────────────────────────────
-
-st.markdown(
-    f"**Created at:** "
-    f"{report['created_at']}"
-)
-
-
-# ────────────────────────────────────────────────────────────
-# Full JSON
-# ────────────────────────────────────────────────────────────
-
-with st.expander(
-    "View full report JSON"
-):
-
-    st.json(report)
-
-with st.expander(
-    "View full report JSON"
-):
-
-    st.json(report)
-
-
 # ============================================================
-# PHASE 6 — RESOLUTION VERIFICATION
+# RESOLUTION VERIFICATION
 # ============================================================
 
 st.markdown("---")
 
-st.subheader("🔍 Resolution Verification")
+st.subheader(
+    "🔍 Resolution Verification"
+)
 
 st.info(
-    "Once the civic authority repairs the issue, "
-    "upload an after-repair image for verification."
+    "Once the civic authority repairs "
+    "the issue, upload an after-repair "
+    "image for verification."
 )
 
+
 after_image = st.file_uploader(
+
     "📷 Upload After-Repair Image",
-    type=["jpg", "jpeg", "png"],
+
+    type=[
+        "jpg",
+        "jpeg",
+        "png"
+    ],
+
     key="after_repair_image"
 )
+
 
 if after_image is not None:
 
     st.image(
+
         after_image,
-        caption="After-Repair Image",
+
+        caption=
+            "After-Repair Image",
+
         use_container_width=True
     )
 
@@ -732,56 +713,127 @@ if after_image is not None:
     ):
 
         with st.spinner(
-            "Comparing before and after images..."
+            "Comparing before and "
+            "after images..."
         ):
 
             after_path = (
-                Path(UPLOADS_DIR)
-                / f"after_{report['id']}_{after_image.name}"
+
+                UPLOADS_DIR /
+
+                (
+                    f"after_"
+                    f"{report['id']}_"
+                    f"{after_image.name}"
+                )
+
             )
 
             with open(
                 after_path,
                 "wb"
-            ) as f:
+            ) as file:
 
-                f.write(
+                file.write(
                     after_image.getbuffer()
                 )
 
-            verification = verify_resolution(
-                report["image"]["path"],
-                str(after_path)
+            verification = (
+                verify_resolution(
+
+                    report[
+                        "image"
+                    ][
+                        "path"
+                    ],
+
+                    str(
+                        after_path
+                    )
+
+                )
             )
 
-            report["resolution"] = {
-                "after_image": str(after_path),
-                "image_similarity": verification["similarity"],
-                "ai_verified": verification["verified"],
-                "citizen_confirmed": None
+
+            report[
+                "resolution"
+            ] = {
+
+                "after_image":
+                    str(
+                        after_path
+                    ),
+
+                "image_similarity":
+                    verification[
+                        "similarity"
+                    ],
+
+                "ai_verified":
+                    verification[
+                        "verified"
+                    ],
+
+                "citizen_confirmed":
+                    None
+
             }
 
-            save_report(report)
 
-            st.session_state.submitted_report = report
+            # Update existing saved report
+            reports = load_reports()
 
-            if verification["verified"]:
+            for index, saved_report in enumerate(
+                reports
+            ):
+
+                if (
+                    saved_report.get(
+                        "id"
+                    )
+                    == report.get(
+                        "id"
+                    )
+                ):
+
+                    reports[index] = report
+
+            with open(
+                "data/reports.json",
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                import json
+
+                json.dump(
+                    reports,
+                    file,
+                    indent=4
+                )
+
+
+            if verification[
+                "verified"
+            ]:
 
                 st.success(
-                    "🤖 AI suggests that the issue "
-                    "has been resolved."
+                    "🤖 AI suggests that "
+                    "the issue has been resolved."
                 )
 
                 st.write(
-                    f"Image similarity: "
+
+                    "Image similarity: "
                     f"{verification['similarity'] * 100:.1f}%"
+
                 )
 
             else:
 
                 st.warning(
-                    "⚠️ AI could not confidently verify "
-                    "the resolution."
+                    "⚠️ AI could not confidently "
+                    "verify the resolution."
                 )
 
 
@@ -790,13 +842,27 @@ if after_image is not None:
 # ============================================================
 
 if (
-    report.get("resolution", {})
-    .get("ai_verified") is True
+    report
+    .get(
+        "resolution",
+        {}
+    )
+    .get(
+        "ai_verified"
+    )
+    is True
 ):
 
-    st.markdown("### Is the issue actually resolved?")
+    st.markdown("---")
 
-    col1, col2 = st.columns(2)
+    st.subheader(
+        "Is the issue actually resolved?"
+    )
+
+    col1, col2 = (
+        st.columns(2)
+    )
+
 
     with col1:
 
@@ -805,26 +871,66 @@ if (
             use_container_width=True
         ):
 
-            report["resolution"][
+            report[
+                "resolution"
+            ][
                 "citizen_confirmed"
             ] = True
 
-            report["status"] = "Closed"
+            report[
+                "status"
+            ] = "Closed"
 
-            report["status_history"].append({
-                "status": "Closed",
-                "timestamp": __import__(
-                    "datetime"
-                ).datetime.now().isoformat()
+            report[
+                "status_history"
+            ].append({
+
+                "status":
+                    "Closed",
+
+                "timestamp":
+                    datetime.now().isoformat()
+
             })
 
-            save_report(report)
 
-            st.session_state.submitted_report = report
+            reports = load_reports()
+
+            for index, saved_report in enumerate(
+                reports
+            ):
+
+                if (
+                    saved_report.get(
+                        "id"
+                    )
+                    == report.get(
+                        "id"
+                    )
+                ):
+
+                    reports[index] = report
+
+
+            import json
+
+            with open(
+                "data/reports.json",
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                json.dump(
+                    reports,
+                    file,
+                    indent=4
+                )
+
 
             st.success(
                 "✅ Issue successfully closed!"
             )
+
 
     with col2:
 
@@ -833,48 +939,78 @@ if (
             use_container_width=True
         ):
 
-            report["resolution"][
+            report[
+                "resolution"
+            ][
                 "citizen_confirmed"
             ] = False
 
-            report["status"] = "In Progress"
+            report[
+                "status"
+            ] = "In Progress"
 
-            report["status_history"].append({
-                "status": "In Progress",
-                "timestamp": __import__(
-                    "datetime"
-                ).datetime.now().isoformat()
+            report[
+                "status_history"
+            ].append({
+
+                "status":
+                    "In Progress",
+
+                "timestamp":
+                    datetime.now().isoformat()
+
             })
 
-            save_report(report)
 
-            st.session_state.submitted_report = report
+            reports = load_reports()
+
+            for index, saved_report in enumerate(
+                reports
+            ):
+
+                if (
+                    saved_report.get(
+                        "id"
+                    )
+                    == report.get(
+                        "id"
+                    )
+                ):
+
+                    reports[index] = report
+
+
+            import json
+
+            with open(
+                "data/reports.json",
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                json.dump(
+                    reports,
+                    file,
+                    indent=4
+                )
+
 
             st.warning(
-                "⚠️ Issue reopened and returned "
-                "to the authority."
+                "⚠️ Issue reopened and "
+                "returned to the authority."
             )
 
 
-# ────────────────────────────────────────────────────────────
-# Footer
-# ────────────────────────────────────────────────────────────
+# ============================================================
+# RAW REPORT
+# ============================================================
 
 st.markdown("---")
 
-st.caption(
-    "CivicAI — Smart Civic Issue Reporting "
-    "& Resolution Platform"
-)    
+with st.expander(
+    "🔧 Developer: View full report JSON"
+):
 
-
-# ────────────────────────────────────────────────────────────
-# Footer
-# ────────────────────────────────────────────────────────────
-
-st.markdown("---")
-
-st.caption(
-    "CivicAI — Smart Civic Issue Reporting "
-    "& Resolution Platform"
-)
+    st.json(
+        report
+    )

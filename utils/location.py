@@ -1,19 +1,9 @@
-from __future__ import annotations
-
 from math import radians, sin, cos, sqrt, atan2
 
 
-def haversine_distance(
-    lat1: float,
-    lon1: float,
-    lat2: float,
-    lon2: float,
-) -> float:
+def haversine_distance(lat1, lon1, lat2, lon2):
     """
-    Calculate distance between two GPS coordinates.
-
-    Returns:
-        Distance in meters.
+    Calculate distance between two GPS coordinates in meters.
     """
 
     earth_radius = 6371000
@@ -31,6 +21,9 @@ def haversine_distance(
         * sin(delta_lon / 2) ** 2
     )
 
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    c = 2 * atan2(
+        sqrt(a),
+        sqrt(1 - a)
+    )
 
     return earth_radius * c

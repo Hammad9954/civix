@@ -1,71 +1,123 @@
 import streamlit as st
 from collections import Counter
+
 import pandas as pd
+
 import folium
 from streamlit_folium import st_folium
 
 
 def issue_statistics(reports):
+
     issues = []
 
     for report in reports:
-        issue = report.get("issue", {}).get("type")
+
+        issue = (
+            report.get("issue", {})
+            .get("type")
+        )
 
         if issue:
+
             issues.append(issue)
 
     return Counter(issues)
 
 
 def render_issue_map(reports):
+
     valid_reports = []
 
     for report in reports:
-        location = report.get("location", {})
 
-        lat = location.get("latitude")
-        lon = location.get("longitude")
+        location = report.get(
+            "location",
+            {}
+        )
 
-        if lat is not None and lon is not None:
-            valid_reports.append((report, lat, lon))
+        lat = location.get(
+            "latitude"
+        )
+
+        lon = location.get(
+            "longitude"
+        )
+
+        if (
+            lat is not None
+            and
+            lon is not None
+        ):
+
+            valid_reports.append(
+                (
+                    report,
+                    lat,
+                    lon
+                )
+            )
 
     if not valid_reports:
-        st.info("📍 No GPS reports available yet.")
+
+        st.info(
+            "No GPS reports available."
+        )
+
         return
 
-    first_report = valid_reports[0]
+    first_report = (
+        valid_reports[0]
+    )
 
-    m = folium.Map(
-        location=[first_report[1], first_report[2]],
+    civic_map = folium.Map(
+
+        location=[
+            first_report[1],
+            first_report[2]
+        ],
+
         zoom_start=13
     )
 
-    for report, lat, lon in valid_reports:
+    for (
+        report,
+        lat,
+        lon
+    ) in valid_reports:
 
-        issue = report.get(
-            "issue", {}
-        ).get("type", "Unknown")
+        issue = (
+            report.get("issue", {})
+            .get(
+                "type",
+                "Unknown"
+            )
+        )
 
-        priority = report.get(
-            "priority", {}
-        ).get("level", "LOW")
-
-        status = report.get(
-            "status", "Reported"
+        priority = (
+            report.get("priority", {})
+            .get(
+                "level"
+            )
+            or "LOW"
         )
 
         folium.Marker(
+
             [lat, lon],
-            popup=f"""
-            <b>Issue:</b> {issue}<br>
-            <b>Priority:</b> {priority}<br>
-            <b>Status:</b> {status}
-            """,
-            tooltip=issue
-        ).add_to(m)
+
+            popup=(
+                f"{issue}"
+                f"<br>Priority: "
+                f"{priority}"
+            )
+
+        ).add_to(
+            civic_map
+        )
 
     st_folium(
-        m,
+        civic_map,
         width=900,
         height=500
     )
@@ -73,101 +125,97 @@ def render_issue_map(reports):
 
 def render_dashboard(reports):
 
-    st.title("🏙️ CivicSense Dashboard")
-
-    # =========================
-    # KPI CARDS
-    # =========================
+    st.title(
+        "🏙️ CivicSense Dashboard"
+    )
 
     total = len(reports)
 
     resolved = sum(
-        1 for r in reports
-        if r.get("status") in ["Resolved", "Closed"]
+
+        1
+        for r in reports
+
+        if r.get("status")
+        in [
+            "Resolved",
+            "Closed"
+        ]
     )
 
-    pending = total - resolved
+    pending = (
+        total -
+        resolved
+    )
 
     critical = sum(
-        1 for r in reports
-        if r.get("priority", {}).get("level") == "CRITICAL"
+
+        1
+        for r in reports
+
+        if (
+            r.get(
+                "priority",
+                {}
+            ).get(
+                "level"
+            )
+            == "CRITICAL"
+        )
     )
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = (
+        st.columns(4)
+    )
 
     col1.metric(
-        "📋 Total Reports",
+        "Total Reports",
         total
     )
 
     col2.metric(
-        "✅ Resolved",
+        "Resolved",
         resolved
     )
 
     col3.metric(
-        "⏳ Pending",
+        "Pending",
         pending
     )
 
     col4.metric(
-        "🚨 Critical Issues",
+        "Critical Issues",
         critical
     )
 
-    st.markdown("---")
-
-    # =========================
-    # ISSUE DISTRIBUTION
-    # =========================
-
-    st.subheader("📊 Issue Distribution")
-
-    stats = issue_statistics(reports)
-
-    if stats:
-
-        df = pd.DataFrame(
-            stats.items(),
-            columns=["Issue", "Reports"]
-        )
-
-        st.bar_chart(
-            df.set_index("Issue")
-        )
-
-    else:
-        st.info("No reports available yet.")
-
-    st.markdown("---")
-
-    # =========================
-    # STATUS DISTRIBUTION
-    # =========================
-
-    st.subheader("📌 Report Status")
-
-    status_counter = Counter(
-        r.get("status", "Reported")
-        for r in reports
+    stats = issue_statistics(
+        reports
     )
 
-    status_df = pd.DataFrame(
-        status_counter.items(),
-        columns=["Status", "Reports"]
+    df = pd.DataFrame(
+        stats.items(),
+        columns=[
+            "Issue",
+            "Reports"
+        ]
     )
 
-    if not status_df.empty:
+    st.subheader(
+        "📊 Issue Distribution"
+    )
+
+    if not df.empty:
+
         st.bar_chart(
-            status_df.set_index("Status")
+            df.set_index(
+                "Issue"
+            )
         )
 
-    st.markdown("---")
+    st.subheader(
+        "🗺️ Civic Issue Hotspots"
+    )
 
-    # =========================
-    # HOTSPOT MAP
-    # =========================
-
-    st.subheader("🗺️ Civic Issue Hotspots")
-
-    render_issue_map(reports)
+    render_issue_map(
+        reports
+    )
