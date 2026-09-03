@@ -1,134 +1,196 @@
 [
-  {
-    "id": "RPT-000001",
-    "issue": {
-      "type": "Other",
-      "subcategory": null
+    {
+        "id": "RPT-000001",
+        "issue": {
+            "type": "Other",
+            "subcategory": null
+        },
+        "image": {
+            "filename": "plastic-bottle-scrap.jpg",
+            "path": "uploads\\plastic-bottle-scrap.jpg"
+        },
+        "ai": {
+            "available": false,
+            "model": null,
+            "category": null,
+            "confidence": 0.0,
+            "probabilities": {}
+        },
+        "user": {
+            "confirmed_category": "Other",
+            "description": "PLASTIC WASTE"
+        },
+        "location": {
+            "latitude": null,
+            "longitude": null,
+            "address": null
+        },
+        "status": "reported",
+        "priority": {
+            "score": null,
+            "level": null,
+            "factors": {}
+        },
+        "duplicates": {
+            "is_duplicate": null,
+            "matches": []
+        },
+        "spam": {
+            "score": null,
+            "flagged": null,
+            "reasons": []
+        },
+        "resolution": {
+            "after_image": null,
+            "image_similarity": null,
+            "ai_verified": null,
+            "citizen_confirmed": null
+        },
+        "assignment": {
+            "authority_id": null,
+            "department": null,
+            "assigned_at": null
+        },
+        "created_at": "2026-09-03T13:13:36.882706+00:00",
+        "updated_at": "2026-09-03T13:13:36.882706+00:00"
     },
-    "image": {
-      "filename": "plastic-bottle-scrap.jpg",
-      "path": "uploads\\plastic-bottle-scrap.jpg"
-    },
-    "ai": {
-      "available": false,
-      "model": null,
-      "category": null,
-      "confidence": 0.0,
-      "probabilities": {}
-    },
-    "user": {
-      "confirmed_category": "Other",
-      "description": "PLASTIC WASTE"
-    },
-    "location": {
-      "latitude": null,
-      "longitude": null,
-      "address": null
-    },
-    "status": "reported",
-    "priority": {
-      "score": null,
-      "level": null,
-      "factors": {}
-    },
-    "duplicates": {
-      "is_duplicate": null,
-      "matches": []
-    },
-    "spam": {
-      "score": null,
-      "flagged": null,
-      "reasons": []
-    },
-    "resolution": {
-      "after_image": null,
-      "image_similarity": null,
-      "ai_verified": null,
-      "citizen_confirmed": null
-    },
-    "assignment": {
-      "authority_id": null,
-      "department": null,
-      "assigned_at": null
-    },
-    "created_at": "2026-09-03T13:13:36.882706+00:00",
-    "updated_at": "2026-09-03T13:13:36.882706+00:00"
-  },
-  {
-    "id": "RPT-000002",
-    "issue": {
-      "type": "Pothole",
-      "subcategory": "Pothole"
-    },
-    "image": {
-      "filename": "Screenshot 2026-09-03 202911.png",
-      "path": "uploads\\Screenshot 2026-09-03 202911.png"
-    },
-    "ai": {
-      "available": true,
-      "model": "pothole",
-      "category": "Pothole",
-      "subcategory": "Pothole",
-      "confidence": 0.9302,
-      "probabilities": {
-        "Pothole (Pothole)": 0.9302,
-        "Overflowing Garbage (Paper)": 0.2942,
-        "Overflowing Garbage (Biodegradable)": 0.2465,
-        "Overflowing Garbage (Metal)": 0.2385,
-        "Road Damage (Manhole / Surface Patch (D50))": 0.5797
-      }
-    },
-    "user": {
-      "confirmed_category": "Pothole",
-      "description": ""
-    },
-    "location": {
-      "latitude": null,
-      "longitude": null,
-      "address": null
-    },
-    "status": "Reported",
-    "priority": {
-      "score": 32,
-      "level": "MEDIUM",
-      "factors": {
-        "base_severity": 70,
-        "duplicate_reports": 0,
-        "duplicate_score": 0,
-        "age_score": 0,
-        "near_school": false,
-        "near_hospital": false,
-        "high_traffic": false
-      }
-    },
-    "duplicates": {
-      "is_duplicate": false,
-      "matches": []
-    },
-    "spam": {
-      "score": null,
-      "flagged": null,
-      "reasons": []
-    },
-    "resolution": {
-      "after_image": null,
-      "image_similarity": null,
-      "ai_verified": null,
-      "citizen_confirmed": null
-    },
-    "assignment": {
-      "authority_id": "ROAD-001",
-      "authority_name": "Municipal Roads Authority",
-      "department": "Roads Department",
-      "assigned_at": "2026-09-03T22:06:59.472528"
-    },
-    "created_at": "2026-09-03T16:36:59.462248+00:00",
-    "updated_at": "2026-09-03T16:36:59.462248+00:00",
-    "status_history": [
-      {
+    {
+        "id": "RPT-000002",
+        "issue": {
+            "type": "Pothole",
+            "subcategory": "Pothole"
+        },
+        "image": {
+            "filename": "Screenshot 2026-09-03 202911.png",
+            "path": "uploads\\Screenshot 2026-09-03 202911.png"
+        },
+        "ai": {
+            "available": true,
+            "model": "pothole",
+            "category": "Pothole",
+            "subcategory": "Pothole",
+            "confidence": 0.9302,
+            "probabilities": {
+                "Pothole (Pothole)": 0.9302,
+                "Overflowing Garbage (Paper)": 0.2942,
+                "Overflowing Garbage (Biodegradable)": 0.2465,
+                "Overflowing Garbage (Metal)": 0.2385,
+                "Road Damage (Manhole / Surface Patch (D50))": 0.5797
+            }
+        },
+        "user": {
+            "confirmed_category": "Pothole",
+            "description": ""
+        },
+        "location": {
+            "latitude": null,
+            "longitude": null,
+            "address": null
+        },
         "status": "Reported",
-        "timestamp": "2026-09-03T16:36:59.462248+00:00"
-      }
-    ]
-  }
+        "priority": {
+            "score": 32,
+            "level": "MEDIUM",
+            "factors": {
+                "base_severity": 70,
+                "duplicate_reports": 0,
+                "duplicate_score": 0,
+                "age_score": 0,
+                "near_school": false,
+                "near_hospital": false,
+                "high_traffic": false
+            }
+        },
+        "duplicates": {
+            "is_duplicate": false,
+            "matches": []
+        },
+        "spam": {
+            "score": null,
+            "flagged": null,
+            "reasons": []
+        },
+        "resolution": {
+            "after_image": null,
+            "image_similarity": null,
+            "ai_verified": null,
+            "citizen_confirmed": null
+        },
+        "assignment": {
+            "authority_id": "ROAD-001",
+            "authority_name": "Municipal Roads Authority",
+            "department": "Roads Department",
+            "assigned_at": "2026-09-03T22:06:59.472528"
+        },
+        "created_at": "2026-09-03T16:36:59.462248+00:00",
+        "updated_at": "2026-09-03T16:36:59.462248+00:00",
+        "status_history": [
+            {
+                "status": "Reported",
+                "timestamp": "2026-09-03T16:36:59.462248+00:00"
+            }
+        ]
+    },
+    {
+        "id": "CS-10E26A5B",
+        "created_at": "2026-09-04T01:06:05.084393",
+        "issue": {
+            "type": "Pothole",
+            "confirmed_category": "Pothole",
+            "ai_prediction": {}
+        },
+        "description": "Deep road cavity near junction",
+        "image": {
+            "filename": null,
+            "path": null
+        },
+        "location": {
+            "latitude": 19.076,
+            "longitude": 72.877,
+            "address": null
+        },
+        "priority": {
+            "score": 38,
+            "level": "MEDIUM",
+            "factors": {
+                "severity": 70,
+                "duplicate_reports": 0,
+                "near_school": false,
+                "near_hospital": false,
+                "high_traffic": false
+            }
+        },
+        "duplicates": {
+            "is_duplicate": false,
+            "matches": []
+        },
+        "spam": {
+            "score": 0,
+            "flagged": false,
+            "reasons": []
+        },
+        "resolution": {
+            "after_image": null,
+            "image_similarity": null,
+            "ai_verified": null,
+            "citizen_confirmed": null
+        },
+        "assignment": {
+            "authority_id": "ROAD-001",
+            "authority_name": "Municipal Roads Authority",
+            "department": "Roads Department",
+            "assigned_at": "2026-09-04T01:06:05.085005"
+        },
+        "status": "In Progress",
+        "status_history": [
+            {
+                "status": "Reported",
+                "timestamp": "2026-09-04T01:06:05.084403"
+            },
+            {
+                "status": "In Progress",
+                "timestamp": "2026-09-04T01:06:05.098247"
+            }
+        ]
+    }
 ]

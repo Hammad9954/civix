@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — City Pulse & Civic Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a class="active" href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a href="issues.html" data-t="issues">Issues</a>
+        <a href="reports.html" data-t="reports">Reports</a>
+        <a href="admin.html" data-t="admin">Authority</a>
+        <a href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <section class="grid2">
+        <div class="card hero">
+          <div>
+            <div class="eyebrow" data-t="hero">AI POWERED CIVIC INTELLIGENCE</div>
+            <h1>CIVIC<br><span class="outline">SENSE</span></h1>
+            <p data-t="heroText">See what your city needs. Upload a street image and Civic Sense automatically analyses it with trained YOLO models for potholes, garbage, streetlights, and road hazards.</p>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <a class="cta" href="detect.html" data-t="start">START DETECTION ↗</a>
+            <a class="cta" style="background:var(--soft);color:var(--text);border:1px solid var(--line)" href="reports.html">VIEW LIVE MAP 📍</a>
+          </div>
+        </div>
+
+        <div class="card heroVisual motion-stage">
+          <div class="eyebrow">CITY / LIVE VIEW</div>
+          <div class="visualLabel">CIVIC / 24</div>
+          <div class="orbit orbit-a"></div>
+          <div class="orbit orbit-b"></div>
+          <div class="visualCore">
+            <div class="coreCircle">
+              <div>CS</div>
+            </div>
+          </div>
+          <div class="floatCard fc1" data-depth="1.8">
+            <img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=600&q=80" alt="City architecture">
+            <span>URBAN</span>
+          </div>
+          <div class="floatCard fc2" data-depth="2.5">
+            <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=600&q=80" alt="Public space">
+            <span>PUBLIC</span>
+          </div>
+          <div class="floatCard fc3" data-depth="3.2">
+            <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=600&q=80" alt="City road">
+            <span>ROAD</span>
+          </div>
+          <div class="floatCard fc4" data-depth="2.1">
+            <img src="https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=600&q=80" alt="Neighborhood">
+            <span>ZONE 04</span>
+          </div>
+          <i class="pin p1"></i>
+          <i class="pin p2"></i>
+          <i class="pin p3"></i>
+          <div class="scanLine"></div>
+        </div>
+      </section>
+
+      <div class="ticker">
+        <div class="tickerTrack">
+          <span>DETECT</span><b>•</b><span>REPORT</span><b>•</b><span>MAP</span><b>•</b><span>RESOLVE</span><b>•</b>
+          <span>YOLO VISION</span><b>•</b><span>PRIORITY ENGINE</span><b>•</b><span>AUTHORITY ROUTING</span><b>•</b>
+          <span>DETECT</span><b>•</b><span>REPORT</span><b>•</b><span>MAP</span><b>•</b><span>RESOLVE</span><b>•</b>
+        </div>
+      </div>
+
+      <section>
+        <div class="title">
+          <div>
+            <h2>CITY PULSE.</h2>
+            <p class="muted">Real-time civic intelligence and live reports overview.</p>
+          </div>
+          <div class="eyebrow">01 / LIVE DATA</div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <small>Issues detected</small>
+            <strong id="stat-total">--</strong>
+            <span id="stat-total-sub">Total recorded complaints</span>
+          </div>
+          <div class="stat">
+            <small>Resolved</small>
+            <strong id="stat-resolved" style="color:var(--green)">--</strong>
+            <span id="stat-resolved-rate">Resolution rate</span>
+          </div>
+          <div class="stat">
+            <small>In progress</small>
+            <strong id="stat-in-progress" style="color:var(--yellow)">--</strong>
+            <span>Active work orders</span>
+          </div>
+          <div class="stat">
+            <small>Active Locations</small>
+            <strong id="stat-locations">--</strong>
+            <span>Geotagged zones</span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div>
+          <h2>SEE IT.<br>REPORT IT.<br>IMPROVE IT.</h2>
+          <p>Civic Sense connects citizens, AI vision models, and municipal authorities for cleaner, safer, and better-maintained cities.</p>
+        </div>
+        <div class="muted">
+          CIVIC SENSE © 2026<br>
+          SMART CIVIC TECHNOLOGY
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+  <script>
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const json = await res.json();
+        if (json.success && json.data) {
+          const d = json.data;
+          document.getElementById('stat-total').textContent = d.total.toLocaleString();
+          document.getElementById('stat-resolved').textContent = d.resolved.toLocaleString();
+          document.getElementById('stat-resolved-rate').textContent = `${d.resolution_rate}% resolution rate`;
+          document.getElementById('stat-in-progress').textContent = d.in_progress.toLocaleString();
+          document.getElementById('stat-locations').textContent = d.active_zones.toLocaleString();
+        }
+      } catch(err) {
+        console.warn('Could not load live stats:', err);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadStats);
+  </script>
+</body>
+</html>

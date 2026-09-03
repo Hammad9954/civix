@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — AI Civic Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a href="issues.html" data-t="issues">Issues</a>
+        <a href="reports.html" data-t="reports">Reports</a>
+        <a href="admin.html" data-t="admin">Authority</a>
+        <a class="active" href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="title">
+        <div>
+          <h2>CIVIC ASSISTANT.</h2>
+          <p class="muted">Ask questions about civic issue resolution, municipal departments, or reporting procedures.</p>
+        </div>
+        <div class="eyebrow">06 / INTELLIGENT AGENT</div>
+      </div>
+
+      <!-- Quick Suggestion Prompts -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn-secondary btn-sm prompt-chip" data-prompt="How do I report a pothole?">
+          🕳️ How to report a pothole?
+        </button>
+        <button class="btn-secondary btn-sm prompt-chip" data-prompt="Which authority handles streetlights?">
+          💡 Who handles streetlights?
+        </button>
+        <button class="btn-secondary btn-sm prompt-chip" data-prompt="How does AI resolution verification work?">
+          🔍 How does resolution verification work?
+        </button>
+        <button class="btn-secondary btn-sm prompt-chip" data-prompt="What happens when a duplicate complaint is submitted?">
+          ⚠️ How are duplicate reports handled?
+        </button>
+      </div>
+
+      <!-- Chat Window -->
+      <section class="chat-window">
+        <div class="chat-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);"></div>
+            <strong style="font-family:'Space Grotesk';">CivicSense AI Assistant</strong>
+          </div>
+          <button id="clearChatBtn" class="btn-secondary btn-sm">🗑️ Clear Chat</button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div class="chat-bubble assistant">
+            Hello! I am <b>CivicSense AI</b>. I'm here to assist you with reporting civic infrastructure issues, understanding municipal dispatching, or tracking your complaints. How can I help you today?
+          </div>
+        </div>
+
+        <form class="chat-footer" id="chatForm">
+          <input type="text" id="chatInput" class="chat-input" placeholder="Ask CivicSense AI anything about civic issues..." required autocomplete="off">
+          <button type="submit" id="sendBtn" class="btn-primary" style="padding:0 24px;">
+            Send ↗
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+  <script src="assistant.js"></script>
+</body>
+</html>

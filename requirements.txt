@@ -10,3 +10,4 @@ streamlit-folium
 streamlit-geolocation
 pandas
 ollama
+flask

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — Authority Control Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a href="issues.html" data-t="issues">Issues</a>
+        <a href="reports.html" data-t="reports">Reports</a>
+        <a class="active" href="admin.html" data-t="admin">Authority</a>
+        <a href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="title">
+        <div>
+          <h2>AUTHORITY PANEL.</h2>
+          <p class="muted">Departmental dispatch, complaint status tracking, and work orders.</p>
+        </div>
+        <div class="eyebrow">05 / MUNICIPAL CONTROL</div>
+      </div>
+
+      <!-- Filters Section -->
+      <section class="admin-filters">
+        <div>
+          <label class="form-label" for="filterDept">Department</label>
+          <select id="filterDept" class="form-select">
+            <option value="all">All Departments</option>
+            <option value="Roads Department">Roads Department</option>
+            <option value="Electrical Department">Electrical Department</option>
+            <option value="Sanitation Department">Sanitation Department</option>
+            <option value="Water Department">Water Department</option>
+            <option value="General Civic Department">General Civic Department</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" for="filterPriority">Priority Level</label>
+          <select id="filterPriority" class="form-select">
+            <option value="all">All Priorities</option>
+            <option value="CRITICAL">CRITICAL</option>
+            <option value="HIGH">HIGH</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="LOW">LOW</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" for="filterStatus">Complaint Status</label>
+          <select id="filterStatus" class="form-select">
+            <option value="all">All Statuses</option>
+            <option value="Reported">Reported</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Assigned">Assigned</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+
+        <div style="display:flex;align-items:flex-end;">
+          <button id="reloadAdminBtn" class="btn-primary" style="width:100%;height:46px;justify-content:center;">
+            🔄 Refresh Tickets
+          </button>
+        </div>
+      </section>
+
+      <!-- Authority Issues Table -->
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Photo</th>
+              <th>Issue & Details</th>
+              <th>Priority</th>
+              <th>Department</th>
+              <th>Spam / Dup</th>
+              <th>Status Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center;padding:30px;" class="muted">
+                Loading complaints...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — Reports & Live Map</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a href="issues.html" data-t="issues">Issues</a>
+        <a class="active" href="reports.html" data-t="reports">Reports</a>
+        <a href="admin.html" data-t="admin">Authority</a>
+        <a href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="title">
+        <div>
+          <h2>LIVE REPORTS.</h2>
+          <p class="muted">Citizen reports tracked in real-time across municipal zones.</p>
+        </div>
+        <div class="eyebrow">04 / COMMUNITY FEED</div>
+      </div>
+
+      <!-- Filter bar -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-secondary filter-btn active" data-filter="all">All</button>
+        <button class="btn-secondary filter-btn" data-filter="Reported">Reported</button>
+        <button class="btn-secondary filter-btn" data-filter="In Progress">In Progress</button>
+        <button class="btn-secondary filter-btn" data-filter="Resolved">Resolved</button>
+        <button class="btn-secondary filter-btn" data-filter="Closed">Closed</button>
+        <span style="margin-left:auto;font-size:12px;" class="muted" id="reportCountText">Loading reports...</span>
+      </div>
+
+      <!-- Reports Dynamic Grid -->
+      <div class="reportList" id="reportsContainer">
+        <div class="report" style="grid-column:1/-1;text-align:center;padding:30px;">
+          <p class="muted">Loading community reports...</p>
+        </div>
+      </div>
+
+      <!-- Live Map Section -->
+      <div class="title" style="margin-top:28px;">
+        <div>
+          <h2 data-t="map">CITY MAP.</h2>
+          <p class="muted" data-t="mapSub">Interactive map showing geotagged complaints and repair zones.</p>
+        </div>
+        <div class="eyebrow">GEOSPATIAL RADAR</div>
+      </div>
+
+      <div class="mapTools">
+        <button id="locateBtn" data-t="locate">USE MY LOCATION</button>
+        <button id="refreshMapBtn">REFRESH MAP</button>
+      </div>
+
+      <div id="map"></div>
+    </main>
+  </div>
+
+  <!-- Resolution Verification Modal -->
+  <div class="modal-overlay" id="verifyModal">
+    <div class="modal-box">
+      <button class="modal-close" id="closeModalBtn">&times;</button>
+      <div class="eyebrow" style="margin-bottom:8px;">AI RESOLUTION VERIFICATION</div>
+      <h3 style="font:700 22px 'Space Grotesk';margin-bottom:8px;">Verify Issue Repair</h3>
+      <p class="muted" style="font-size:13px;line-height:1.5;margin-bottom:16px;">
+        Upload a photo of the repaired site to run AI visual similarity analysis and verify completion.
+      </p>
+
+      <form id="verifyForm">
+        <input type="hidden" id="verifyReportId">
+        <div class="form-group">
+          <label class="form-label" for="afterImageInput">After-Repair Photograph</label>
+          <input type="file" id="afterImageInput" class="form-input" accept="image/*" required>
+        </div>
+
+        <div id="verifyResult" style="display:none;margin-bottom:16px;padding:12px;border-radius:12px;background:var(--soft);font-size:13px;"></div>
+
+        <button type="submit" id="verifySubmitBtn" class="btn-primary" style="width:100%;justify-content:center;">
+          🤖 Run AI Verification ↗
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="reports.js"></script>
+</body>
+</html>

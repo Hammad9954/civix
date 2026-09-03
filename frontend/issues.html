@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — Issues Catalog</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a class="active" href="issues.html" data-t="issues">Issues</a>
+        <a href="reports.html" data-t="reports">Reports</a>
+        <a href="admin.html" data-t="admin">Authority</a>
+        <a href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="title">
+        <div>
+          <h2>CIVIC ISSUES.</h2>
+          <p class="muted">Supported categories classified by CivicSense AI and municipal dispatch.</p>
+        </div>
+        <div class="eyebrow">03 / ISSUE DIRECTORY</div>
+      </div>
+
+      <div class="issueCards">
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">◉</div>
+          <h3 data-t="pothole">Pothole</h3>
+          <p>Road holes, surface cavities and asphalt decay endangering vehicular movement.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">⚠</div>
+          <h3 data-t="road">Road Damage</h3>
+          <p>Transverse/alligator cracks, lane line blur, manhole displacement (D00-D50).</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">🗑</div>
+          <h3 data-t="garbage">Garbage</h3>
+          <p>Overflowing garbage cans, illegal plastic waste dumps, industrial litter.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">💡</div>
+          <h3 data-t="light">Street Light</h3>
+          <p>Dead bulbs, dark corridors, damaged wiring and unstable lighting poles.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">💧</div>
+          <h3 data-t="water">Waterlogging</h3>
+          <p>Standing water, pipeline burst, clogged stormwater drains and road flooding.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">🚧</div>
+          <h3>Construction</h3>
+          <p>Unsecured construction debris, open trenches and missing safety barriers.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">🌳</div>
+          <h3>Obstruction</h3>
+          <p>Fallen trees, sidewalk encroachments, and blocked emergency lanes.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+
+        <a href="detect.html" class="issue" style="display:block;">
+          <div class="issueIcon">🚦</div>
+          <h3>Traffic Sign</h3>
+          <p>Broken traffic lights, obscured direction signage and faded zebra crossings.</p>
+          <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--muted)">DETECT THIS ISSUE ↗</div>
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
