@@ -192,5 +192,146 @@
                 "timestamp": "2026-09-04T01:06:05.098247"
             }
         ]
+    },
+    {
+        "id": "CS-852C8C5E",
+        "created_at": "2026-09-04T01:55:51.790883",
+        "issue": {
+            "type": "Pothole",
+            "confirmed_category": "Pothole",
+            "ai_prediction": {
+                "annotated_url": "/uploads/ann_ae24e210_MicrosoftTeams-image_32.jpg",
+                "available": true,
+                "category": "Pothole",
+                "confidence": 0.7701,
+                "detections": [
+                    {
+                        "box": [
+                            147.0635986328125,
+                            173.87246704101562,
+                            395.43878173828125,
+                            264.60601806640625
+                        ],
+                        "class_name": "0",
+                        "confidence": 0.7701,
+                        "issue_type": "Pothole",
+                        "model": "pothole",
+                        "subcategory": "Pothole"
+                    },
+                    {
+                        "box": [
+                            19.89558982849121,
+                            172.8955841064453,
+                            392.7456359863281,
+                            278.9863586425781
+                        ],
+                        "class_name": "0",
+                        "confidence": 0.7562,
+                        "issue_type": "Pothole",
+                        "model": "pothole",
+                        "subcategory": "Pothole"
+                    },
+                    {
+                        "box": [
+                            0,
+                            0,
+                            612,
+                            406
+                        ],
+                        "class_name": "PAPER",
+                        "confidence": 0.732,
+                        "issue_type": "Overflowing Garbage",
+                        "model": "garbage_classification",
+                        "subcategory": "Paper"
+                    },
+                    {
+                        "box": [
+                            155.49896240234375,
+                            176.5052032470703,
+                            376.40966796875,
+                            266.221435546875
+                        ],
+                        "class_name": "METAL",
+                        "confidence": 0.3046,
+                        "issue_type": "Overflowing Garbage",
+                        "model": "garbage_classification",
+                        "subcategory": "Metal"
+                    },
+                    {
+                        "box": [
+                            158.3563232421875,
+                            170.0208282470703,
+                            383.9503479003906,
+                            278.6606140136719
+                        ],
+                        "class_name": "D50",
+                        "confidence": 0.6278,
+                        "issue_type": "Road Damage",
+                        "model": "road_damage_detection",
+                        "subcategory": "Manhole / Surface Patch (D50)"
+                    }
+                ],
+                "image_filename": "ae24e210_MicrosoftTeams-image_32.jpg",
+                "image_url": "/uploads/ae24e210_MicrosoftTeams-image_32.jpg",
+                "message": "AI identified **Pothole** (Pothole) with 77% confidence.",
+                "model": "pothole",
+                "probabilities": {
+                    "Overflowing Garbage (Metal)": 0.3046,
+                    "Overflowing Garbage (Paper)": 0.732,
+                    "Pothole (Pothole)": 0.7701,
+                    "Road Damage (Manhole / Surface Patch (D50))": 0.6278
+                },
+                "subcategory": "Pothole"
+            }
+        },
+        "description": "uieqfiuhiee",
+        "image": {
+            "filename": "ae24e210_MicrosoftTeams-image_32.jpg",
+            "path": "C:\\Atharva\\Hackathon\\CivicAI\\civix\\uploads\\ae24e210_MicrosoftTeams-image_32.jpg"
+        },
+        "location": {
+            "latitude": 19.107012,
+            "longitude": 72.837718,
+            "address": null
+        },
+        "priority": {
+            "score": 38,
+            "level": "MEDIUM",
+            "factors": {
+                "severity": 70,
+                "duplicate_reports": 0,
+                "near_school": false,
+                "near_hospital": false,
+                "high_traffic": false
+            }
+        },
+        "duplicates": {
+            "is_duplicate": false,
+            "matches": []
+        },
+        "spam": {
+            "score": 0,
+            "flagged": false,
+            "reasons": []
+        },
+        "resolution": {
+            "after_image": null,
+            "image_similarity": null,
+            "ai_verified": null,
+            "citizen_confirmed": null
+        },
+        "assignment": {
+            "authority_id": "ROAD-001",
+            "authority_name": "Municipal Roads Authority",
+            "department": "Roads Department",
+            "assigned_at": "2026-09-04T01:55:51.791878"
+        },
+        "status": "Reported",
+        "status_history": [
+            {
+                "status": "Reported",
+                "timestamp": "2026-09-04T01:55:51.790883"
+            }
+        ]
     }
 ]

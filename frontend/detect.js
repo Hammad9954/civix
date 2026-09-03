@@ -175,9 +175,25 @@ getGpsBtn?.addEventListener("click", () => {
   );
 });
 
+// Close Auth Gate Modal
+document.getElementById("closeAuthGateBtn")?.addEventListener("click", () => {
+  document.getElementById("authGate")?.classList.remove("show");
+});
+
 // Report Submission
 reportForm?.addEventListener("submit", async e => {
   e.preventDefault();
+
+  // Auth Guard: Require authentication to submit
+  if (typeof isAuthenticated === "function" && !isAuthenticated()) {
+    const authGate = document.getElementById("authGate");
+    if (authGate) {
+      authGate.classList.add("show");
+    } else {
+      toast("Please log in to submit a civic report.");
+    }
+    return;
+  }
 
   const submitBtn = document.getElementById("submitReportBtn");
   submitBtn.disabled = true;
@@ -202,10 +218,28 @@ reportForm?.addEventListener("submit", async e => {
   }
 
   try {
+    // Attach Supabase access token if available
+    const headers = {};
+    if (typeof getAccessToken === "function") {
+      const token = await getAccessToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+
     const res = await fetch("/api/reports", {
       method: "POST",
+      headers: headers,
       body: payload
     });
+
+    if (res.status === 401) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span>${tr("submitReport")}</span> ↗`;
+      const authGate = document.getElementById("authGate");
+      if (authGate) authGate.classList.add("show");
+      return toast("Please log in to submit a civic report.");
+    }
 
     const data = await res.json();
     submitBtn.disabled = false;
@@ -230,6 +264,15 @@ reportForm?.addEventListener("submit", async e => {
 
     document.getElementById("sumDept").textContent = report.assignment?.department || "General Civic";
     document.getElementById("sumAuthority").textContent = report.assignment?.authority_name || "Municipal Authority";
+
+    if (report.reporter_id) {
+      const reporterEl = document.getElementById("sumReporter");
+      const reporterRow = document.getElementById("sumReporterRow");
+      if (reporterEl && reporterRow) {
+        reporterEl.textContent = report.reporter_id;
+        reporterRow.style.display = "flex";
+      }
+    }
 
     if (report.duplicates && report.duplicates.is_duplicate) {
       document.getElementById("sumDuplicateRow").style.display = "flex";

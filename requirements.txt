@@ -11,3 +11,5 @@ streamlit-geolocation
 pandas
 ollama
 flask
+supabase
+python-dotenv

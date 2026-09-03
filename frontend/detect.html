@@ -140,6 +140,10 @@
               <span class="muted">Duplicate Detection:</span>
               <span style="color:var(--yellow);font-weight:600;">⚠️ Potential Duplicate</span>
             </div>
+            <div class="summary-row" id="sumReporterRow" style="display:none;">
+              <span class="muted">Reporter ID:</span>
+              <span id="sumReporter" style="font-weight:600;font-family:'Space Grotesk';">--</span>
+            </div>
             <div style="margin-top:14px;display:flex;gap:10px;">
               <a href="reports.html" class="btn-secondary btn-sm" style="flex:1;text-align:center;">View on Live Map 📍</a>
               <button type="button" id="reportAnotherBtn" class="btn-secondary btn-sm" style="flex:1;">Report Another ＋</button>
@@ -181,9 +185,26 @@
     </main>
   </div>
 
+  <!-- Auth Gate Modal -->
+  <div class="auth-gate" id="authGate">
+    <div class="auth-gate-box">
+      <div style="font-size:36px;margin-bottom:8px;">🔐</div>
+      <h3>Please log in to submit a civic report.</h3>
+      <p>Your identity remains secure and private. City authorities will only see your pseudonymous reporter ID.</p>
+      <div style="display:flex;gap:10px;flex-direction:column;margin-top:16px;">
+        <a href="login.html" class="btn-primary" style="justify-content:center;text-decoration:none;">Login ↗</a>
+        <a href="signup.html" class="btn-secondary" style="justify-content:center;text-align:center;text-decoration:none;">Create Account</a>
+        <button type="button" id="closeAuthGateBtn" class="btn-secondary" style="background:transparent;border:none;color:var(--muted);cursor:pointer;padding:6px;font-size:12px;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
+  <script src="auth.js"></script>
   <script src="detect.js"></script>
 </body>
 </html>

@@ -12,6 +12,10 @@ Replaces Streamlit with a modern Flask server that:
 from __future__ import annotations
 
 import json
+
+# Load environment variables BEFORE any other imports that need them
+from dotenv import load_dotenv
+load_dotenv()
 import logging
 import os
 import uuid
@@ -32,6 +36,7 @@ from ai.resolution_verifier import verify_resolution
 from utils.authority import assign_authority
 from utils.report import create_report, load_reports, save_report
 from utils.status import STATUSES, update_status
+from utils.auth import require_auth, verify_token, get_reporter_id
 
 # Configure Logging
 logging.basicConfig(
@@ -91,19 +96,6 @@ def index():
     """Serve the Civic Sense City Pulse home page."""
     return send_from_directory(str(FRONTEND_DIR), "index.html")
 
-
-@app.route("/<path:path>")
-def static_files(path: str):
-    """Serve frontend static files (HTML, CSS, JS, etc.)."""
-    file_path = FRONTEND_DIR / path
-    if file_path.exists() and file_path.is_file():
-        return send_from_directory(str(FRONTEND_DIR), path)
-    # Check if user navigated without .html
-    html_fallback = FRONTEND_DIR / f"{path}.html"
-    if html_fallback.exists():
-        return send_from_directory(str(FRONTEND_DIR), f"{path}.html")
-    # Fallback to index.html
-    return send_from_directory(str(FRONTEND_DIR), "index.html")
 
 
 @app.route("/uploads/<path:filename>")
@@ -273,8 +265,9 @@ def get_report(report_id: str):
 
 
 @app.route("/api/reports", methods=["POST"])
+@require_auth
 def submit_report():
-    """Submit a new civic issue report with AI enrichment."""
+    """Submit a new civic issue report with AI enrichment. Requires authentication."""
     try:
         data = request.form.to_dict() if request.form else (request.get_json() or {})
 
@@ -320,7 +313,7 @@ def submit_report():
         elif isinstance(ai_result_raw, dict):
             ai_result = ai_result_raw
 
-        # 1. Base Report Creation
+        # 1. Base Report Creation (with authenticated user identity)
         report = create_report(
             issue_type=confirmed_category,
             ai_result=ai_result,
@@ -329,7 +322,9 @@ def submit_report():
             image_filename=image_filename,
             image_path=image_path,
             latitude=latitude,
-            longitude=longitude
+            longitude=longitude,
+            user_id=getattr(request, 'auth_user_id', None),
+            reporter_id=getattr(request, 'auth_reporter_id', None)
         )
 
         # 2. Existing Reports for Duplicate & Spam checks
@@ -603,6 +598,58 @@ def civic_chat():
             )
 
         return jsonify({"success": True, "reply": reply, "is_fallback": True})
+
+
+# ────────────────────────────────────────────────────────────
+# API: AUTH — SESSION VERIFICATION
+# ────────────────────────────────────────────────────────────
+
+@app.route("/api/auth/me", methods=["GET"])
+def auth_me():
+    """Validate the caller's Supabase session and return public identity."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"success": False, "authenticated": False}), 401
+
+    token = auth_header.split("Bearer ", 1)[1].strip()
+    user = verify_token(token)
+    if user is None:
+        return jsonify({"success": False, "authenticated": False}), 401
+
+    reporter_id = get_reporter_id(user["id"])
+    return jsonify({
+        "success": True,
+        "authenticated": True,
+        "reporter_id": reporter_id,
+        "role": "citizen"
+    })
+
+
+@app.route("/api/auth/config", methods=["GET"])
+def auth_config():
+    """Return public Supabase configuration for the browser."""
+    return jsonify({
+        "success": True,
+        "supabase_url": os.environ.get("SUPABASE_URL", ""),
+        "supabase_anon_key": os.environ.get("SUPABASE_ANON_KEY", "")
+    })
+
+
+@app.route("/<path:path>")
+def static_files(path: str):
+    """Serve frontend static files (HTML, CSS, JS, etc.)."""
+    if path.startswith("api/"):
+        return jsonify({"success": False, "error": "API endpoint not found"}), 404
+
+    file_path = FRONTEND_DIR / path
+    if file_path.exists() and file_path.is_file():
+        return send_from_directory(str(FRONTEND_DIR), path)
+    # Check if user navigated without .html
+    html_fallback = FRONTEND_DIR / f"{path}.html"
+    if html_fallback.exists():
+        return send_from_directory(str(FRONTEND_DIR), f"{path}.html")
+    # Fallback to index.html
+    return send_from_directory(str(FRONTEND_DIR), "index.html")
 
 
 # ────────────────────────────────────────────────────────────

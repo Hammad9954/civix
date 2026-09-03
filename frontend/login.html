@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a href="issues.html" data-t="issues">Issues</a>
+        <a href="reports.html" data-t="reports">Reports</a>
+        <a href="admin.html" data-t="admin">Authority</a>
+        <a href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="title">
+        <div>
+          <h2>LOGIN.</h2>
+          <p class="muted">Sign in to your Civic Sense account to report civic issues.</p>
+        </div>
+        <div class="eyebrow">AUTHENTICATION</div>
+      </div>
+
+      <section class="auth-section">
+        <div class="card auth-card">
+          <div class="auth-icon">🔐</div>
+          <h3 class="auth-title">Welcome Back</h3>
+          <p class="muted" style="margin-bottom:24px;">Enter your credentials to access your civic account.</p>
+
+          <div id="authMessage" class="auth-message" style="display:none;"></div>
+
+          <form id="loginForm" class="auth-form">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address</label>
+              <input type="email" id="email" class="form-input" placeholder="citizen@example.com" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password">Password</label>
+              <input type="password" id="password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" id="loginBtn" class="btn-primary" style="width:100%;justify-content:center;">
+              Login ↗
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            <span class="muted">Don't have an account?</span>
+            <a href="signup.html" class="auth-link">Create account ↗</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("loginForm");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const loginBtn = document.getElementById("loginBtn");
+      const messageEl = document.getElementById("authMessage");
+
+      function showMessage(text, isError) {
+        messageEl.textContent = text;
+        messageEl.className = "auth-message " + (isError ? "error" : "success");
+        messageEl.style.display = "block";
+      }
+
+      // If already logged in, redirect to detect page
+      onAuthChange((state) => {
+        if (!state.loading && state.session) {
+          window.location.href = "detect.html";
+        }
+      });
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          return showMessage("Please enter both email and password.", true);
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Signing in...";
+        messageEl.style.display = "none";
+
+        try {
+          const sb = getSupabase();
+          if (!sb) {
+            showMessage("Authentication service is not configured.", true);
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login ↗";
+            return;
+          }
+
+          const { data, error } = await sb.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+          if (error) {
+            let msg = error.message || "Login failed. Please check your credentials.";
+            if (msg.toLowerCase().includes("email not confirmed")) {
+              msg = "Email not confirmed. Please check your email inbox to verify your account, or disable 'Confirm email' in Supabase Auth > Providers > Email.";
+            }
+            showMessage(msg, true);
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login ↗";
+            return;
+          }
+
+          showMessage("Login successful! Redirecting...", false);
+          // Auth state change listener will handle the redirect
+          setTimeout(() => {
+            window.location.href = "detect.html";
+          }, 800);
+
+        } catch (err) {
+          console.error("Login error:", err);
+          showMessage("An unexpected error occurred. Please try again.", true);
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login ↗";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

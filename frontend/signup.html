@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Civic Sense — Create Account</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <span class="logo">C</span>
+        <span data-t="brand">CIVIC SENSE</span>
+      </a>
+      <div class="navlinks">
+        <a href="index.html" data-t="city">City Pulse</a>
+        <a href="detect.html" data-t="detect">Detect</a>
+        <a href="issues.html" data-t="issues">Issues</a>
+        <a href="reports.html" data-t="reports">Reports</a>
+        <a href="admin.html" data-t="admin">Authority</a>
+        <a href="assistant.html" data-t="assistant">AI Assistant</a>
+      </div>
+      <div class="actions">
+        <select id="language" class="lang" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button id="theme" class="theme" title="Toggle Theme">☾</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="title">
+        <div>
+          <h2>CREATE ACCOUNT.</h2>
+          <p class="muted">Register as a citizen to report civic issues in your city.</p>
+        </div>
+        <div class="eyebrow">REGISTRATION</div>
+      </div>
+
+      <section class="auth-section">
+        <div class="card auth-card">
+          <div class="auth-icon">🏙️</div>
+          <h3 class="auth-title">Join Civic Sense</h3>
+          <p class="muted" style="margin-bottom:24px;">Create your account to start reporting and tracking civic issues.</p>
+
+          <div id="authMessage" class="auth-message" style="display:none;"></div>
+
+          <form id="signupForm" class="auth-form">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address</label>
+              <input type="email" id="email" class="form-input" placeholder="citizen@example.com" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password">Password</label>
+              <input type="password" id="password" class="form-input" placeholder="Minimum 6 characters" required autocomplete="new-password" minlength="6">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" class="form-input" placeholder="Re-enter your password" required autocomplete="new-password" minlength="6">
+            </div>
+
+            <button type="submit" id="signupBtn" class="btn-primary" style="width:100%;justify-content:center;">
+              Create Account ↗
+            </button>
+          </form>
+
+          <div class="auth-footer">
+            <span class="muted">Already have an account?</span>
+            <a href="login.html" class="auth-link">Login ↗</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+  <script src="supabase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("signupForm");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const confirmInput = document.getElementById("confirmPassword");
+      const signupBtn = document.getElementById("signupBtn");
+      const messageEl = document.getElementById("authMessage");
+
+      function showMessage(text, isError) {
+        messageEl.textContent = text;
+        messageEl.className = "auth-message " + (isError ? "error" : "success");
+        messageEl.style.display = "block";
+      }
+
+      // If already logged in, redirect to detect page
+      onAuthChange((state) => {
+        if (!state.loading && state.session) {
+          window.location.href = "detect.html";
+        }
+      });
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        if (!email || !password || !confirm) {
+          return showMessage("Please fill in all fields.", true);
+        }
+
+        if (password.length < 6) {
+          return showMessage("Password must be at least 6 characters.", true);
+        }
+
+        if (password !== confirm) {
+          return showMessage("Passwords do not match.", true);
+        }
+
+        signupBtn.disabled = true;
+        signupBtn.textContent = "Creating account...";
+        messageEl.style.display = "none";
+
+        try {
+          const sb = getSupabase();
+          if (!sb) {
+            showMessage("Authentication service is not configured.", true);
+            signupBtn.disabled = false;
+            signupBtn.textContent = "Create Account ↗";
+            return;
+          }
+
+          const { data, error } = await sb.auth.signUp({
+            email: email,
+            password: password
+          });
+
+          if (error) {
+            showMessage(error.message || "Registration failed. Please try again.", true);
+            signupBtn.disabled = false;
+            signupBtn.textContent = "Create Account ↗";
+            return;
+          }
+
+          // Check if email confirmation is required
+          if (data.user && !data.session) {
+            // Email verification required
+            showMessage(
+              "Account created! Please check your email to verify your account before logging in.",
+              false
+            );
+            signupBtn.disabled = true;
+            signupBtn.textContent = "Check your email";
+          } else if (data.session) {
+            // Auto-confirmed (dev mode or email verification disabled)
+            showMessage("Account created successfully! Redirecting...", false);
+            setTimeout(() => {
+              window.location.href = "detect.html";
+            }, 800);
+          }
+
+        } catch (err) {
+          console.error("Signup error:", err);
+          showMessage("An unexpected error occurred. Please try again.", true);
+          signupBtn.disabled = false;
+          signupBtn.textContent = "Create Account ↗";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

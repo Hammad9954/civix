@@ -20,7 +20,9 @@ def create_report(
     image_filename=None,
     image_path=None,
     latitude=None,
-    longitude=None
+    longitude=None,
+    user_id=None,
+    reporter_id=None
 ):
 
     return {
@@ -30,6 +32,13 @@ def create_report(
 
         "created_at":
             datetime.now().isoformat(),
+
+        "user_id":
+            user_id,
+
+        "reporter_id":
+            reporter_id,
+
 
         "issue": {
 

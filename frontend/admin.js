@@ -80,6 +80,7 @@ function renderAdminTable(reports) {
         <td>
           <b style="font-family:'Space Grotesk';font-size:13px;">${r.id}</b>
           <div style="font-size:10px;color:var(--muted);">${new Date(r.created_at).toLocaleDateString()}</div>
+          ${r.reporter_id ? `<div style="font-size:10px;color:var(--text);font-family:'Space Grotesk';font-weight:600;margin-top:2px;">👤 ${r.reporter_id}</div>` : ""}
         </td>
         <td>
           ${imgUrl ? `
