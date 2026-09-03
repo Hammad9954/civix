@@ -32,7 +32,7 @@ def render_report_form(
     st.subheader("📋 Issue Details")
 
     # ── AI Suggestion Banner ─────────────────────────────────
-    if ai_result.get("available"):
+    if ai_result and ai_result.get("available"):
         category = ai_result.get("category", "Unknown")
         subcategory = ai_result.get("subcategory")
         confidence = ai_result.get("confidence", 0.0)

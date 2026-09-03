@@ -1,3 +1,4 @@
+from app_streamlit import reports
 import streamlit as st
 from collections import Counter
 
@@ -5,6 +6,7 @@ import pandas as pd
 
 import folium
 from streamlit_folium import st_folium
+from folium.plugins import HeatMap
 
 
 def issue_statistics(reports):
@@ -24,103 +26,46 @@ def issue_statistics(reports):
 
     return Counter(issues)
 
+def render_issue_heatmap(reports):
 
-def render_issue_map(reports):
+    points = []
 
-    valid_reports = []
+    st.write("Total reports:", len(reports))
 
     for report in reports:
+        location = report.get("location", {})
 
-        location = report.get(
-            "location",
-            {}
-        )
+        lat = location.get("latitude")
+        lon = location.get("longitude")
 
-        lat = location.get(
-            "latitude"
-        )
+        if lat is None or lon is None:
+            continue
 
-        lon = location.get(
-            "longitude"
-        )
+        points.append([float(lat), float(lon)])
 
-        if (
-            lat is not None
-            and
-            lon is not None
-        ):
+    st.write("GPS points found:", len(points))
+    st.write("Points:", points)
 
-            valid_reports.append(
-                (
-                    report,
-                    lat,
-                    lon
-                )
-            )
-
-    if not valid_reports:
-
-        st.info(
-            "No GPS reports available."
-        )
-
+    if not points:
+        st.warning("No GPS coordinates found in reports.")
         return
 
-    first_report = (
-        valid_reports[0]
-    )
+    avg_lat = sum(p[0] for p in points) / len(points)
+    avg_lon = sum(p[1] for p in points) / len(points)
 
-    civic_map = folium.Map(
-
-        location=[
-            first_report[1],
-            first_report[2]
-        ],
-
+    m = folium.Map(
+        location=[avg_lat, avg_lon],
         zoom_start=13
     )
 
-    for (
-        report,
-        lat,
-        lon
-    ) in valid_reports:
+    HeatMap(
+        points,
+        radius=30,
+        blur=25,
+        min_opacity=0.35
+    ).add_to(m)
 
-        issue = (
-            report.get("issue", {})
-            .get(
-                "type",
-                "Unknown"
-            )
-        )
-
-        priority = (
-            report.get("priority", {})
-            .get(
-                "level"
-            )
-            or "LOW"
-        )
-
-        folium.Marker(
-
-            [lat, lon],
-
-            popup=(
-                f"{issue}"
-                f"<br>Priority: "
-                f"{priority}"
-            )
-
-        ).add_to(
-            civic_map
-        )
-
-    st_folium(
-        civic_map,
-        width=900,
-        height=500
-    )
+    st_folium(m, width=900, height=550)
 
 
 def render_dashboard(reports):
@@ -212,10 +157,7 @@ def render_dashboard(reports):
             )
         )
 
-    st.subheader(
-        "🗺️ Civic Issue Hotspots"
-    )
+    st.subheader("🔥 Civic Issue Hotspots")
+st.caption("Areas with a higher concentration of reported civic issues appear hotter.")
 
-    render_issue_map(
-        reports
-    )
+render_issue_heatmap(reports)
