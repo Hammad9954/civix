@@ -15,6 +15,14 @@ import sys
 from pathlib import Path
 
 import streamlit as st
+import folium
+
+from streamlit_folium import st_folium
+from streamlit_geolocation import streamlit_geolocation
+
+from ai.duplicate_detector import find_duplicate_reports
+from ai.priority_engine import calculate_priority
+from utils.report import load_reports
 
 # ── Ensure project root is on sys.path ──────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -25,7 +33,11 @@ from ai.classifier import CivicIssueClassifier
 from components.upload import render_upload_section
 from components.report_form import render_report_form
 from config.constants import ISSUE_TYPES, UPLOADS_DIR
-from utils.report import create_report, save_report
+from utils.report import (
+    create_report,
+    save_report,
+    load_reports,
+)
 
 # ────────────────────────────────────────────────────────────
 # Page Configuration
@@ -97,6 +109,59 @@ if ai_result is None:
 # ────────────────────────────────────────────────────────────
 st.markdown("---")
 form_data = render_report_form(ai_result)
+# ============================================================
+# PHASE 2 — LOCATION
+# ============================================================
+
+st.markdown("---")
+st.subheader("📍 Report Location")
+
+location = streamlit_geolocation()
+
+latitude = location.get("latitude")
+longitude = location.get("longitude")
+
+if latitude is not None and longitude is not None:
+
+    st.success(
+        f"📍 Location captured: "
+        f"{latitude:.6f}, {longitude:.6f}"
+    )
+
+    # Show map
+    report_map = folium.Map(
+        location=[
+            latitude,
+            longitude,
+        ],
+        zoom_start=16,
+    )
+
+    folium.Marker(
+        [
+            latitude,
+            longitude,
+        ],
+        popup="Your reported issue",
+        tooltip="📍 Report Location",
+        icon=folium.Icon(
+            color="red",
+            icon="warning-sign",
+        ),
+    ).add_to(report_map)
+
+    st_folium(
+        report_map,
+        width=700,
+        height=400,
+    )
+
+else:
+
+    st.warning(
+        "📍 Please click the location button "
+        "and allow browser location access."
+    )
 
 if form_data is None:
     st.stop()
@@ -117,7 +182,6 @@ if uploaded_file is not None:
     with open(image_path, "wb") as f:
         uploaded_file.seek(0)
         f.write(uploaded_file.read())
-
 report = create_report(
     issue_type=confirmed_category,
     ai_result=ai_result,
@@ -125,7 +189,91 @@ report = create_report(
     description=description,
     image_filename=image_filename,
     image_path=image_path,
+    latitude=latitude,
+    longitude=longitude,
 )
+
+# ============================================================
+# PHASE 3 — DUPLICATE DETECTION
+# ============================================================
+
+existing_reports = load_reports()
+
+duplicate_matches = find_duplicate_reports(
+    report,
+    existing_reports,
+)
+
+report["duplicates"] = {
+    "is_duplicate": len(duplicate_matches) > 0,
+    "matches": duplicate_matches,
+}
+
+if duplicate_matches:
+
+    st.warning(
+        f"⚠️ {len(duplicate_matches)} "
+        "similar report(s) found nearby."
+    )
+
+    for match in duplicate_matches[:5]:
+
+        st.write(
+            f"**{match['report_id']}** — "
+            f"{match['distance_m']} m away — "
+            f"Similarity: "
+            f"{match['duplicate_score'] * 100:.0f}%"
+        )
+
+else:
+
+    st.success(
+        "✅ No likely duplicate reports found."
+    )
+
+    # ============================================================
+# PHASE 4 — PRIORITY ENGINE
+# ============================================================
+
+priority = calculate_priority(
+    report,
+    duplicate_count=len(duplicate_matches),
+)
+
+report["priority"] = priority
+
+st.markdown("---")
+st.subheader("🧠 Intelligent Priority")
+
+score = priority["score"]
+level = priority["level"]
+
+if level == "CRITICAL":
+    st.error(
+        f"🔴 CRITICAL — {score}/100"
+    )
+
+elif level == "HIGH":
+    st.warning(
+        f"🟠 HIGH — {score}/100"
+    )
+
+elif level == "MEDIUM":
+    st.info(
+        f"🟡 MEDIUM — {score}/100"
+    )
+
+else:
+    st.success(
+        f"🟢 LOW — {score}/100"
+    )
+
+with st.expander("View priority factors"):
+
+    st.json(
+        priority["factors"]
+    )
+    save_report(report)
 
 save_report(report)
 st.session_state.submitted_report = report

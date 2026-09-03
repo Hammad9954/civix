@@ -25,7 +25,6 @@ from config.constants import REPORTS_FILE, REPORT_ID_PREFIX
 # ────────────────────────────────────────────────────────────
 # Report Creation
 # ────────────────────────────────────────────────────────────
-
 def create_report(
     issue_type: str,
     ai_result: dict,
@@ -33,6 +32,8 @@ def create_report(
     description: str,
     image_filename: str | None = None,
     image_path: str | None = None,
+    latitude: float | None = None,
+    longitude: float | None = None,
 ) -> dict:
     """Build a complete civic-issue report dict.
 
@@ -92,8 +93,8 @@ def create_report(
 
         # ── Location (V2+) ──────────────────────────────────
         "location": {
-            "latitude": None,
-            "longitude": None,
+            "latitude": latitude,
+            "longitude": longitude,
             "address": None,
         },
 
